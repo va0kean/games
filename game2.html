@@ -2,17 +2,45 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Catch the Ball</title>
+  <title>Игра 2: Catch the Ball</title>
   <style>
-    body { margin:0; background:#111; }
-    canvas { display:block; margin:0 auto; background:#222; }
+    body { margin:0; font-family:sans-serif; background:#0f172a; color:#fff; }
+    header {
+      background:#1e293b;
+      padding:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+    nav a {
+      color:#22d3ee;
+      text-decoration:none;
+      margin:0 8px;
+      font-weight:bold;
+    }
+    nav a:hover { color:#f43f5e; }
+    canvas { display:block; margin:20px auto; background:#222; }
+    .hud { text-align:center; margin-top:10px; }
   </style>
 </head>
 <body>
+  <header>
+    <div><strong>Catch the Ball</strong></div>
+    <nav>
+      <a href="index.html">🏠 Главная</a>
+      <a href="game1.html">Игра 1</a>
+      <a href="game3.html">Игра 3</a>
+      <a href="game4.html">Игра 4</a>
+    </nav>
+  </header>
+
   <canvas id="game" width="400" height="400"></canvas>
+  <div class="hud">Счёт: <span id="score">0</span></div>
+
   <script>
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
+    const scoreEl = document.getElementById('score');
 
     let paddle = { x: 160, y: 370, w: 80, h: 10 };
     let ball = { x: 200, y: 0, r: 10, vy: 3 };
@@ -26,32 +54,34 @@
     function loop() {
       ctx.clearRect(0,0,400,400);
 
-      // рисуем платформу
+      // платформа
       ctx.fillStyle = 'cyan';
       ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
 
-      // рисуем шарик
+      // шарик
       ctx.fillStyle = 'red';
       ctx.beginPath();
       ctx.arc(ball.x, ball.y, ball.r, 0, Math.PI*2);
       ctx.fill();
 
-      // движение шарика
+      // движение
       ball.y += ball.vy;
 
-      // проверка ловли
+      // ловля
       if (ball.y+ball.r >= paddle.y &&
           ball.x >= paddle.x &&
           ball.x <= paddle.x+paddle.w) {
         score++;
+        scoreEl.textContent = score;
         ball.y = 0;
         ball.x = Math.random()*380+10;
       }
 
-      // если промах
+      // промах
       if (ball.y > 400) {
         alert("Игра окончена! Счёт: "+score);
         score = 0;
+        scoreEl.textContent = score;
         ball.y = 0;
       }
 
