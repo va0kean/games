@@ -1,387 +1,99 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Runner — jump with ↑</title>
+  <meta charset="UTF-8">
+  <title>Игра 1: Runner</title>
   <style>
-    :root {
-      --bg: #0f172a;        /* фон */
-      --ground: #1e293b;    /* земля */
-      --player: #22d3ee;    /* игрок */
-      --obstacle: #f43f5e;  /* препятствия */
-      --text: #e2e8f0;      /* текст */
-      --accent: #a3e635;    /* акцент */
-    }
-
-    * { box-sizing: border-box; }
-    html, body {
-      height: 100%;
-      margin: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-    }
-
-    .wrap {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
+    body { margin:0; font-family:sans-serif; background:#0f172a; color:#fff; }
     header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 8px;
+      background:#1e293b;
+      padding:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
     }
-
-    .title {
-      font-weight: 700;
-      letter-spacing: 0.2px;
+    nav a {
+      color:#22d3ee;
+      text-decoration:none;
+      margin:0 8px;
+      font-weight:bold;
     }
-
-    .hud {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      font-weight: 600;
-    }
-
-    .btn {
-      background: var(--accent);
-      color: #0a0a0a;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 700;
-    }
-    .btn:active { transform: translateY(1px); }
-
-    .game {
-      position: relative;
-      width: 100%;
-      height: 300px;
-      border-radius: 12px;
-      overflow: hidden;
-      background: linear-gradient(180deg, #0b1224 0%, #0f172a 60%, var(--ground) 60%, var(--ground) 100%);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      user-select: none;
-      touch-action: manipulation;
-    }
-
-    /* Земля — линия */
-    .ground-line {
-      position: absolute;
-      left: 0; right: 0;
-      bottom: 60px;
-      height: 2px;
-      background: #334155;
-    }
-
-    /* Игрок — прямоугольник с “ногой” */
-    .player {
-      position: absolute;
-      left: 60px;
-      width: 28px;
-      height: 40px;
-      background: var(--player);
-      border-radius: 6px 6px 4px 4px;
-      box-shadow: 0 4px 10px rgba(34, 211, 238, 0.35);
-      transform: translateY(0);
-    }
-    .player::after {
-      content: "";
-      position: absolute;
-      bottom: -6px;
-      left: 6px;
-      width: 16px;
-      height: 6px;
-      background: #0ea5b7;
-      border-radius: 3px;
-    }
-
-    /* Препятствия */
-    .obstacle {
-      position: absolute;
-      bottom: 60px;
-      width: 24px;
-      height: 36px;
-      background: var(--obstacle);
-      border-radius: 4px;
-      box-shadow: 0 4px 10px rgba(244, 63, 94, 0.35);
-    }
-
-    /* Экран сообщений */
-    .overlay {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(2, 6, 23, 0.55);
-      backdrop-filter: blur(2px);
-      color: var(--text);
-      text-align: center;
-      padding: 16px;
-    }
-    .overlay.hidden { display: none; }
-    .overlay h2 { margin: 0 0 8px; }
-    .overlay p { margin: 0 0 12px; opacity: 0.9; }
-
-    /* Подсказки */
-    .tips {
-      margin-top: 8px;
-      font-size: 14px;
-      opacity: 0.8;
-    }
-
-    /* Адаптив */
-    @media (max-width: 520px) {
-      .game { height: 260px; }
-      .player { left: 40px; }
-    }
+    nav a:hover { color:#f43f5e; }
+    .wrap { max-width:900px; margin:20px auto; }
+    .game { position:relative; width:100%; height:300px; background:#222; overflow:hidden; }
+    .player { position:absolute; left:60px; bottom:60px; width:28px; height:40px; background:#22d3ee; }
+    .obstacle { position:absolute; bottom:60px; width:24px; height:36px; background:#f43f5e; }
+    .hud { margin-top:10px; }
   </style>
 </head>
 <body>
+  <header>
+    <div><strong>Runner</strong></div>
+    <nav>
+      <a href="index.html">🏠 Главная</a>
+      <a href="game2.html">Игра 2</a>
+      <a href="game3.html">Игра 3</a>
+      <a href="game4.html">Игра 4</a>
+    </nav>
+  </header>
+
   <div class="wrap">
-    <header>
-      <div class="title">Runner — прыгай стрелкой вверх или пробелом</div>
-      <div class="hud">
-        <div>Счёт: <span id="score">0</span></div>
-        <div>Рекорд: <span id="best">0</span></div>
-        <button class="btn" id="restartBtn">Перезапуск</button>
-      </div>
-    </header>
-
     <div class="game" id="game">
-      <div class="ground-line"></div>
       <div class="player" id="player"></div>
-      <div class="overlay" id="overlay">
-        <div>
-          <h2>Готов?</h2>
-          <p>Нажми ↑ или пробел, чтобы прыгнуть. Избегай препятствий.</p>
-          <button class="btn" id="startBtn">Старт</button>
-          <div class="tips">На телефоне — тап по экрану.</div>
-        </div>
-      </div>
     </div>
-
-    <div class="tips">
-      <strong>Подсказка:</strong> чем дольше живёшь, тем быстрее появляются препятствия.
+    <div class="hud">
+      Счёт: <span id="score">0</span>
     </div>
   </div>
 
   <script>
-    (() => {
-      const gameEl = document.getElementById('game');
-      const playerEl = document.getElementById('player');
-      const overlayEl = document.getElementById('overlay');
-      const scoreEl = document.getElementById('score');
-      const bestEl = document.getElementById('best');
-      const startBtn = document.getElementById('startBtn');
-      const restartBtn = document.getElementById('restartBtn');
+    const gameEl = document.getElementById('game');
+    const playerEl = document.getElementById('player');
+    const scoreEl = document.getElementById('score');
 
-      // Геометрия
-      const groundY = 60; // высота "земли" от низа
-      const playerWidth = 28;
-      const playerHeight = 40;
-      const playerX = parseInt(getComputedStyle(playerEl).left, 10) || 60;
+    let y = 0, vy = 0, jumping = false;
+    const gravity = 0.6, jumpVelocity = -11;
+    let obstacles = [], score = 0;
 
-      // Физика прыжка
-      const gravity = 0.6;
-      const jumpVelocity = -11.5;
-      let vy = 0;
-      let y = 0; // смещение игрока от земли (0 — стоит на земле)
-      let isJumping = false;
-
-      // Игровое состояние
-      let obstacles = [];
-      let running = false;
-      let score = 0;
-      let best = parseInt(localStorage.getItem('runner_best') || '0', 10);
-      bestEl.textContent = best;
-
-      // Темп появления препятствий
-      let spawnTimer = 0;
-      let spawnInterval = 1200; // мс
-      const minInterval = 650;  // мс
-      const speed = 4.2;        // пикс/кадр
-      const speedScale = 1.0;   // можно увеличить для хардкора
-
-      // Утилиты
-      const now = () => performance.now();
-
-      function resetGame() {
-        // Сброс игрока
-        vy = 0;
-        y = 0;
-        isJumping = false;
-        playerEl.style.transform = `translateY(0px)`;
-
-        // Сброс препятствий
-        obstacles.forEach(o => o.el.remove());
-        obstacles = [];
-
-        // Сброс счёта и таймеров
-        score = 0;
-        scoreEl.textContent = score;
-        spawnTimer = 0;
-        spawnInterval = 1200;
-
-        // Экран
-        overlayEl.classList.remove('hidden');
-        overlayEl.querySelector('h2').textContent = 'Готов?';
-        overlayEl.querySelector('p').textContent = 'Нажми ↑ или пробел, чтобы прыгнуть. Избегай препятствий.';
-      }
-
-      function startGame() {
-        resetGame();
-        overlayEl.classList.add('hidden');
-        running = true;
-        lastFrame = now();
-        requestAnimationFrame(loop);
-      }
-
-      function gameOver() {
-        running = false;
-        overlayEl.classList.remove('hidden');
-        overlayEl.querySelector('h2').textContent = 'Проиграл 😅';
-        overlayEl.querySelector('p').textContent = `Счёт: ${score}`;
-        if (score > best) {
-          best = score;
-          localStorage.setItem('runner_best', String(best));
-          bestEl.textContent = best;
-        }
-      }
-
-      function jump() {
-        if (!running) return;
-        if (isJumping) return;
-        isJumping = true;
+    function jump() {
+      if (!jumping) {
         vy = jumpVelocity;
+        jumping = true;
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.code === 'ArrowUp' || e.code === 'Space') jump();
+    });
+
+    function spawnObstacle() {
+      const el = document.createElement('div');
+      el.className = 'obstacle';
+      el.style.right = '-30px';
+      gameEl.appendChild(el);
+      obstacles.push({ el, x: gameEl.clientWidth });
+    }
+
+    let spawnTimer = 0;
+    function loop() {
+      vy += gravity;
+      y += vy;
+      if (y > 0) { y = 0; vy = 0; jumping = false; }
+      playerEl.style.transform = `translateY(${-y}px)`;
+
+      spawnTimer++;
+      if (spawnTimer > 100) { spawnObstacle(); spawnTimer = 0; }
+
+      for (let i = obstacles.length-1; i>=0; i--) {
+        const o = obstacles[i];
+        o.x -= 4;
+        o.el.style.right = `${gameEl.clientWidth - o.x}px`;
+        if (o.x < -30) { o.el.remove(); obstacles.splice(i,1); score++; scoreEl.textContent=score; }
       }
 
-      function spawnObstacle() {
-        const el = document.createElement('div');
-        el.className = 'obstacle';
-        const h = 24 + Math.floor(Math.random() * 20); // 24–44
-        el.style.height = `${h}px`;
-        el.style.right = `-30px`;
-        gameEl.appendChild(el);
-
-        obstacles.push({
-          el,
-          x: gameEl.clientWidth + 30,
-          width: 24,
-          height: h
-        });
-      }
-
-      function updateObstacles(dt) {
-        const pxPerMs = speed * speedScale * (60 / 1000); // нормировка на ms
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-          const o = obstacles[i];
-          o.x -= pxPerMs * dt * 1000;
-          o.el.style.right = `${Math.max(-40, gameEl.clientWidth - o.x)}px`;
-
-          // Удаление ушедших
-          if (o.x < -50) {
-            o.el.remove();
-            obstacles.splice(i, 1);
-            score++;
-            scoreEl.textContent = score;
-
-            // Ускоряем спавн со временем
-            spawnInterval = Math.max(minInterval, 1200 - score * 15);
-          }
-        }
-      }
-
-      function checkCollision() {
-        const playerBottom = gameEl.clientHeight - groundY;
-        const playerTop = playerBottom - playerHeight - y;
-        const playerRight = playerX + playerWidth;
-        const playerLeft = playerX;
-
-        for (const o of obstacles) {
-          const obstacleRight = o.x + o.width;
-          const obstacleLeft = o.x;
-          const obstacleTop = gameEl.clientHeight - groundY - o.height;
-
-          const overlapX = playerRight > obstacleLeft && playerLeft < obstacleRight;
-          const overlapY = playerBottom > obstacleTop && playerTop < playerBottom;
-          if (overlapX && overlapY) {
-            return true;
-          }
-        }
-        return false;
-      }
-
-      // Главный цикл
-      let lastFrame = now();
-      function loop(t) {
-        if (!running) return;
-        const current = now();
-        const dt = Math.min(32, current - lastFrame); // ограничим скачки
-        lastFrame = current;
-
-        // Физика прыжка
-        if (isJumping) {
-          vy += gravity;
-          y += vy;
-          if (y >= 0) {
-            y = 0;
-            vy = 0;
-            isJumping = false;
-          }
-          playerEl.style.transform = `translateY(${-y}px)`;
-        }
-
-        // Препятствия
-        spawnTimer += dt;
-        if (spawnTimer >= spawnInterval) {
-          spawnTimer = 0;
-          spawnObstacle();
-        }
-        updateObstacles(dt / 1000);
-
-        // Столкновения
-        if (checkCollision()) {
-          gameOver();
-          return;
-        }
-
-        requestAnimationFrame(loop);
-      }
-
-      // Управление
-      function handleKey(e) {
-        if (e.code === 'ArrowUp' || e.code === 'Space') {
-          e.preventDefault();
-          if (!running) startGame();
-          else jump();
-        }
-      }
-      window.addEventListener('keydown', handleKey, { passive: false });
-
-      // Тач: тап = старт/прыжок
-      function handleTap() {
-        if (!running) startGame();
-        else jump();
-      }
-      gameEl.addEventListener('pointerdown', handleTap);
-
-      // Кнопки
-      startBtn.addEventListener('click', startGame);
-      restartBtn.addEventListener('click', () => {
-        resetGame();
-      });
-
-      // Инициализация
-      resetGame();
-    })();
+      requestAnimationFrame(loop);
+    }
+    loop();
   </script>
 </body>
 </html>
