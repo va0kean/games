@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Игра 7: Космический Сборщик</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --nav-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --accent-color: #38bdf8;
+            --danger-color: #ef4444;
+            --success-color: #eab308;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none; /* Запрет выделения текста для игры */
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Чтобы страница не скроллилась во время игры */
+        }
+
+        /* Навигация */
+        nav {
+            background-color: var(--nav-bg);
+            padding: 10px;
+            white-space: nowrap;
+            overflow-x: auto;
+            border-bottom: 1px solid #334155;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        nav a {
+            display: inline-block;
+            color: var(--text-color);
+            text-decoration: none;
+            padding: 8px 12px;
+            margin-right: 5px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        nav a:hover {
+            background-color: #334155;
+        }
+
+        nav a.active {
+            background-color: var(--accent-color);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* Игровая область */
+        main {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        canvas {
+            background: linear-gradient(to bottom, #020617, #1e293b);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 100%;
+            max-height: 100%;
+            touch-action: none; /* Отключаем стандартные жесты браузера */
+        }
+
+        /* Интерфейс поверх игры (UI) */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Чтобы клики проходили сквозь UI к канвасу */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .score-board {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+        }
+
+        .menu-screen {
+            background: rgba(15, 23, 42, 0.85);
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            pointer-events: auto; /* Меню должно реагировать на клики */
+            transition: opacity 0.3s;
+        }
+
+        .menu-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            color: var(--accent-color);
+        }
+
+        p {
+            margin-bottom: 20px;
+            color: #94a3b8;
+            line-height: 1.5;
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #7dd3fc;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Подсказки управления */
+        .controls-hint {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+        
+        .mobile-controls {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            justify-content: space-between;
+            padding: 0 20px;
+            pointer-events: none;
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .mobile-controls {
+                display: flex;
+            }
+        }
+
+        .key-hint {
+            background: rgba(255,255,255,0.1);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Навигация -->
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="game1.html">Игра 1</a>
+        <a href="game2.html">Игра 2</a>
+        <a href="game3.html">Игра 3</a>
+        <a href="game4.html">Игра 4</a>
+        <a href="game5.html">Игра 5</a>
+        <a href="game6.html">Игра 6</a>
+        <a href="game7.html" class="active">Игра 7</a>
+        <a href="game8.html">Игра 8</a>
+        <a href="game9.html">Игра 9</a>
+        <a href="game10.html">Игра 10</a>
+        <a href="game11.html">Игра 11</a>
+        <a href="game12.html">Игра 12</a>
+        <a href="game13.html">Игра 13</a>
+        <a href="game14.html">Игра 14</a>
+        <a href="game15.html">Игра 15</a>
+        <a href="game16.html">Игра 16</a>
+        <a href="game17.html">Игра 17</a>
+    </nav>
+
+    <main id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Слой интерфейса -->
+        <div class="ui-layer">
+            <div class="score-board">Счет: <span id="scoreDisplay">0</span></div>
+
+            <!-- Стартовый экран / Game Over -->
+            <div id="menuScreen" class="menu-screen">
+                <h1 id="menuTitle">Космический Сборщик</h1>
+                <p id="menuText">
+                    Собирай желтые звезды.<br>
+                    Избегай красных астероидов.
+                </p>
+                <button id="startBtn" class="btn">Начать игру</button>
+                <div class="controls-hint">
+                    <span class="desktop-only">← → для движения, Пробел — старт</span>
+                    <span class="mobile-only">Тап слева/справа для движения</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        /**
+         * Игровая логика
+         */
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const menuScreen = document.getElementById('menuScreen');
+        const menuTitle = document.getElementById('menuTitle');
+        const menuText = document.getElementById('menuText');
+        const startBtn = document.getElementById('startBtn');
+        const gameContainer = document.getElementById('game-container');
+
+        // Состояние игры
+        let gameState = 'MENU'; // MENU, PLAYING, GAMEOVER
+        let score = 0;
+        let animationId;
+        let lastTime = 0;
+        let spawnTimer = 0;
+        let spawnInterval = 1000; // мс
+        let difficultyMultiplier = 1;
+
+        // Ввод
+        const keys = {
+            ArrowLeft: false,
+            ArrowRight: false,
+            Space: false
+        };
+        const touchInput = {
+            left: false,
+            right: false
+        };
+
+        // Игровые объекты
+        const player = {
+            x: 0,
+            y: 0,
+            width: 30,
+            height: 40,
+            speed: 400, // px per second
+            color: '#38bdf8'
+        };
+
+        let objects = []; // Массив для астероидов и звезд
+
+        // Настройка размеров холста
+        function resizeCanvas() {
+            canvas.width = gameContainer.clientWidth;
+            canvas.height = gameContainer.clientHeight;
+            
+            // Перемещаем игрока вниз по центру
+            if (gameState === 'MENU') {
+                player.x = canvas.width / 2 - player.width / 2;
+                player.y = canvas.height - player.height - 20;
+            } else {
+                // Корректируем позицию, если игрок оказался за пределами
+                player.y = canvas.height - player.height - 20;
+                if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- Управление ---
+
+        // Клавиатура
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowLeft') keys.ArrowLeft = true;
+            if (e.code === 'ArrowRight') keys.ArrowRight = true;
+            if (e.code === 'Space') {
+                if (gameState !== 'PLAYING') startGame();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowLeft') keys.ArrowLeft = false;
+            if (e.code === 'ArrowRight') keys.ArrowRight = false;
+        });
+
+        // Тач / Клик мышью
+        function handleInputStart(e) {
+            // Если игра окончена или в меню, любой клик запускает (если нажали не на кнопку специально)
+            if (gameState !== 'PLAYING' && e.target !== startBtn) {
+                startGame();
+                return;
+            }
+
+            // Получаем координату X клика относительно канваса
+            const rect = canvas.getBoundingClientRect();
+            let clientX;
+            
+            if (e.type === 'touchstart') {
+                // Для тача берем первый палец
+                clientX = e.touches[0].clientX;
+            } else {
+                clientX = e.clientX;
+            }
+
+            const x = clientX - rect.left;
+            const halfWidth = canvas.width / 2;
+
+            if (x < halfWidth) {
+                touchInput.left = true;
+                touchInput.right = false;
+            } else {
+                touchInput.right = true;
+                touchInput.left = false;
+            }
+        }
+
+        function handleInputEnd(e) {
+            touchInput.left = false;
+            touchInput.right = false;
+        }
+
+        canvas.addEventListener('mousedown', handleInputStart);
+        canvas.addEventListener('mouseup', handleInputEnd);
+        canvas.addEventListener('touchstart', handleInputStart, {passive: false});
+        canvas.addEventListener('touchend', handleInputEnd);
+
+        // Кнопка в меню
+        startBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Чтобы не сработал общий клик по канвасу
+            startGame();
+        });
+
+        // --- Логика Игры ---
+
+        function startGame() {
+            gameState = 'PLAYING';
+            score = 0;
+            scoreDisplay.textContent = score;
+            difficultyMultiplier = 1;
+            objects = [];
+            
+            // Сброс позиции игрока
+            player.x = canvas.width / 2 - player.width / 2;
+            player.y = canvas.height - player.height - 20;
+
+            // Скрыть меню
+            menuScreen.classList.add('hidden');
+            
+            lastTime = performance.now();
+            if (animationId) cancelAnimationFrame(animationId);
+            requestAnimationFrame(gameLoop);
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            menuTitle.textContent = "Игра Окончена";
+            menuText.innerHTML = `Твой финальный счет: <strong>${score}</strong><br>Попробуй еще раз!`;
+            startBtn.textContent = "Играть снова";
+            menuScreen.classList.remove('hidden');
+        }
+
+        function spawnObject() {
+            const size = Math.random() * 20 + 10; // 10-30px
+            const x = Math.random() * (canvas.width - size);
+            
+            // Тип объекта: 20% звезда, 80% астероид (с ростом сложности астероидов становится больше)
+            const isStar = Math.random() > 0.8;
+            
+            objects.push({
+                x: x,
+                y: -size,
+                size: size,
+                type: isStar ? 'star' : 'asteroid',
+                speed: (Math.random() * 100 + 100) * difficultyMultiplier * (isStar ? 1.2 : 1) // Звезды падают быстрее
+            });
+        }
+
+        function update(deltaTime) {
+            const dt = deltaTime / 1000; // секунды
+
+            // Увеличение сложности
+            difficultyMultiplier = 1 + (score / 500);
+
+            // Движение игрока
+            let moveDir = 0;
+            if (keys.ArrowLeft || touchInput.left) moveDir = -1;
+            if (keys.ArrowRight || touchInput.right) moveDir = 1;
+
+            player.x += moveDir * player.speed * dt;
+
+            // Границы экрана для игрока
+            if (player.x < 0) player.x = 0;
+            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+            // Спавн объектов
+            spawnTimer += deltaTime;
+            if (spawnTimer > spawnInterval / difficultyMultiplier) {
+                spawnObject();
+                spawnTimer = 0;
+            }
+
+            // Обновление объектов
+            for (let i = objects.length - 1; i >= 0; i--) {
+                let obj = objects[i];
+                obj.y += obj.speed * dt;
+
+                // Проверка столкновений (Простая AABB проверка)
+                // Игрок - это прямоугольник, объекты - круги, но для простоты используем прямоугольники
+                if (
+                    obj.x < player.x + player.width &&
+                    obj.x + obj.size > player.x &&
+                    obj.y < player.y + player.height &&
+                    obj.y + obj.size > player.y
+                ) {
+                    if (obj.type === 'star') {
+                        score += 10;
+                        scoreDisplay.textContent = score;
+                        objects.splice(i, 1); // Удалить звезду
+                    } else if (obj.type === 'asteroid') {
+                        gameOver();
+                    }
+                    continue;
+                }
+
+                // Удаление объектов за экраном
+                if (obj.y > canvas.height) {
+                    objects.splice(i, 1);
+                    // Штраф за пропуск звезды (опционально), пока просто удаляем
+                }
+            }
+        }
+
+        function draw() {
+            // Очистка
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Рисуем игрока (Треугольник)
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.moveTo(player.x + player.width / 2, player.y); // Верхушка
+            ctx.lineTo(player.x + player.width, player.y + player.height); // Правый низ
+            ctx.lineTo(player.x, player.y + player.height); // Левый низ
+            ctx.closePath();
+            ctx.fill();
+
+            // Эффект двигателя
+            ctx.fillStyle = 'rgba(234, 179, 8, 0.6)';
+            ctx.beginPath();
+            ctx.moveTo(player.x + player.width * 0.3, player.y + player.height);
+            ctx.lineTo(player.x + player.width * 0.7, player.y + player.height);
+            ctx.lineTo(player.x + player.width / 2, player.y + player.height + (Math.random() * 15 + 5));
+            ctx.fill();
+
+            // Рисуем объекты
+            objects.forEach(obj => {
+                if (obj.type === 'star') {
+                    // Звезда
+                    ctx.fillStyle = '#eab308';
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Блик
+                    ctx.fillStyle = '#fef08a';
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.size/2 - obj.size/6, obj.y + obj.size/2 - obj.size/6, obj.size/6, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Астероид
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.size/2, obj.y + obj.size/2, obj.size/2, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Кратер
+                    ctx.fillStyle = '#991b1b';
+                    ctx.beginPath();
+                    ctx.arc(obj.x + obj.size/2 + obj.size/5, obj.y + obj.size/2 - obj.size/5, obj.size/5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+        }
+
+        function gameLoop(timestamp) {
+            if (gameState !== 'PLAYING') return;
+
+            const deltaTime = timestamp - lastTime;
+            lastTime = timestamp;
+
+            update(deltaTime);
+            draw();
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // Первичная отрисовка фона
+        draw();
+
+    </script>
+</body>
+</html>
