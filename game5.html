@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра 5: Бегущий человечек</title>
+    <!-- Подключение favicon -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            background-color: #f0f8ff; /* AliceBlue */
+            color: #333;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        .nav-bar {
+            margin: 15px 0;
+        }
+
+        .nav-bar a {
+            margin: 0 5px;
+            text-decoration: none;
+            color: #007BFF; /* Bootstrap primary */
+        }
+
+        .nav-bar a:hover {
+            text-decoration: underline;
+        }
+
+        /* Игровое поле */
+        #game-container {
+            position: relative;
+            width: 600px;
+            height: 200px;
+            margin: 20px auto;
+            border: 2px solid #333;
+            overflow: hidden;
+            background-color: #e0f7fa; /* Light Cyan */
+        }
+
+        #ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 20px;
+            background-color: #8B4513; /* SaddleBrown */
+        }
+
+        #player {
+            position: absolute;
+            bottom: 20px; /* На уровне земли */
+            left: 50px;
+            width: 30px;
+            height: 50px;
+            background-color: #32CD32; /* LimeGreen */
+            transition: bottom 0.3s ease-out;
+        }
+
+        .obstacle {
+            position: absolute;
+            bottom: 20px; /* На уровне земли */
+            width: 20px;
+            height: 40px;
+            background-color: #FF4500; /* OrangeRed */
+        }
+
+        #instructions {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        #score-display {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        #game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+
+</head>
+<body>
+
+    <h1>qwen Игра 5: Бегущий человечек</h1>
+
+    <!-- Навигация -->
+    <div class="nav-bar">
+        <a href="index.html">Главная</a>
+        |
+        <a href="game1.html">Игра 1</a>
+        <a href="game2.html">Игра 2</a>
+        <a href="game3.html">Игра 3</a>
+        <a href="game4.html">Игра 4</a>
+        <strong><a href="game5.html">Игра 5</a></strong>
+        <a href="game6.html">Игра 6</a>
+        <a href="game7.html">Игра 7</a>
+        <a href="game8.html">Игра 8</a>
+        <a href="game9.html">Игра 9</a>
+        <a href="game10.html">Игра 10</a>
+        <a href="game11.html">Игра 11</a>
+        <a href="game12.html">Игра 12</a>
+        <a href="game13.html">Игра 13</a>
+        <a href="game14.html">Игра 14</a>
+        <a href="game15.html">Игра 15</a>
+        <a href="game16.html">Игра 16</a>
+        <a href="game17.html">Игра 17</a>
+    </div>
+
+    <!-- Игровой контейнер -->
+    <div id="game-container">
+        <div id="ground"></div>
+        <div id="player"></div>
+        <div id="game-over">
+            <p>Игра окончена!</p>
+            <button id="restart-btn">Перезапустить</button>
+        </div>
+    </div>
+
+    <div id="score-display">Очки: <span id="score">0</span></div>
+
+    <div id="instructions">
+        <p>Управление: Пробел или Стрелка Вверх (на ПК) | Тап (на телефоне)</p>
+    </div>
+
+    <script>
+        // --- Константы ---
+        const GRAVITY = 0.6;
+        const JUMP_FORCE = 15;
+        const PLAYER_START_BOTTOM = 20; // px от низа
+        const OBSTACLE_SPEED = 5;
+
+        // --- Элементы DOM ---
+        const player = document.getElementById('player');
+        const gameContainer = document.getElementById('game-container');
+        const scoreDisplay = document.getElementById('score');
+        const gameOverScreen = document.getElementById('game-over');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // --- Переменные состояния игры ---
+        let isJumping = false;
+        let jumpVelocity = 0;
+        let playerBottom = PLAYER_START_BOTTOM;
+        let obstacles = [];
+        let score = 0;
+        let gameRunning = true;
+        let gameLoopId;
+
+        // --- Функции игры ---
+
+        function jump() {
+            if (!isJumping && gameRunning) {
+                isJumping = true;
+                jumpVelocity = JUMP_FORCE;
+            }
+        }
+
+        function updatePlayer() {
+            if (isJumping) {
+                playerBottom += jumpVelocity;
+                jumpVelocity -= GRAVITY;
+
+                if (playerBottom <= PLAYER_START_BOTTOM) {
+                    playerBottom = PLAYER_START_BOTTOM;
+                    isJumping = false;
+                }
+                player.style.bottom = playerBottom + 'px';
+            }
+        }
+
+        function createObstacle() {
+            if (!gameRunning) return;
+
+            const obstacle = document.createElement('div');
+            obstacle.classList.add('obstacle');
+            gameContainer.appendChild(obstacle);
+            obstacles.push({
+                element: obstacle,
+                x: gameContainer.offsetWidth
+            });
+
+            // Следующее препятствие через случайное время
+            const nextObstacleTime = Math.random() * 2000 + 1000; // 1-3 секунды
+            setTimeout(createObstacle, nextObstacleTime);
+        }
+
+        function updateObstacles() {
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                obs.x -= OBSTACLE_SPEED;
+                obs.element.style.left = obs.x + 'px';
+
+                // Удалить препятствие, если оно ушло за экран
+                if (obs.x + obs.element.offsetWidth < 0) {
+                    obs.element.remove();
+                    obstacles.splice(i, 1);
+                    score++;
+                    scoreDisplay.textContent = score;
+                    continue;
+                }
+
+                // Проверка столкновения
+                // Грубая проверка: если x препятствия находится между левой и правой стороной игрока И игрок на уровне земли (не прыгает)
+                const playerRect = player.getBoundingClientRect();
+                const obsRect = obs.element.getBoundingClientRect();
+
+                if (
+                    !isJumping &&
+                    playerRect.right > obsRect.left &&
+                    playerRect.left < obsRect.right &&
+                    playerRect.bottom > obsRect.top
+                ) {
+                    endGame();
+                    return; // Выход из цикла, так как игра закончена
+                }
+            }
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+            updatePlayer();
+            updateObstacles();
+            gameLoopId = requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            gameRunning = true;
+            gameOverScreen.style.display = 'none';
+            score = 0;
+            scoreDisplay.textContent = score;
+
+            // Очистить старые препятствия
+            obstacles.forEach(obs => obs.element.remove());
+            obstacles = [];
+
+            playerBottom = PLAYER_START_BOTTOM;
+            player.style.bottom = playerBottom + 'px';
+
+            // Запустить генерацию препятствий
+            setTimeout(createObstacle, 1500);
+
+            // Запустить игровой цикл
+            if (gameLoopId) cancelAnimationFrame(gameLoopId); // На всякий случай
+            gameLoop();
+        }
+
+        function endGame() {
+            gameRunning = false;
+            cancelAnimationFrame(gameLoopId);
+            gameOverScreen.style.display = 'block';
+        }
+
+        // --- Обработчики событий ---
+        document.addEventListener('keydown', (e) => {
+            if ((e.code === 'Space' || e.key === 'ArrowUp') && gameRunning) {
+                jump();
+            }
+        });
+
+        gameContainer.addEventListener('click', () => {
+            // Для управления тапом на мобильных устройствах
+            if (gameRunning) {
+                jump();
+            } else if (!gameRunning && gameOverScreen.style.display !== 'none') {
+                 // Также можно использовать кнопку рестарта
+            }
+        });
+
+        restartBtn.addEventListener('click', startGame);
+
+        // --- Инициализация ---
+        startGame(); // Автоматический старт при загрузке
+    </script>
+
+</body>
+</html>
