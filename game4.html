@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Game 4</title>
+<link rel="icon" href="favicon.svg">
+<style>
+body {
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+<canvas id="gameCanvas" width="640" height="480"></canvas>
+<script>
+const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const player = { x: 50, y: canvas.height / 2, width: 30, height: 30, velocity: 0, gravity: 0.5, jump: -10 };
+        const obstacles = [];
+        let score = 0;
+        let gameOver = false;
+        const keys = { space: false, up: false };
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') keys.space = true;
+            if (e.key === 'ArrowUp') keys.up = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === ' ') keys.space = false;
+            if (e.key === 'ArrowUp') keys.up = false;
+        });
+        function drawPlayer() {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+        function updatePlayer() {
+            if (keys.space || keys.up) {
+                player.velocity = player.jump;
+            }
+            player.velocity += player.gravity;
+            player.y += player.velocity;
+            if (player.y + player.height > canvas.height) {
+                player.y = canvas.height - player.height;
+                player.velocity = 0;
+            }
+        }
+        function drawObstacles() {
+            obstacles.forEach((obstacle) => {
+                ctx.fillStyle = 'green';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+        }
+        function updateObstacles() {
+            obstacles.forEach((obstacle) => {
+                obstacle.x -= 5;
+                if (obstacle.x + obstacle.width < 0) {
+                    obstacles.splice(obstacles.indexOf(obstacle), 1);
+                }
+            });
+            if (Math.random() < 0.05) {
+                obstacles.push({ x: canvas.width, y: canvas.height - 50, width: 30, height: 50 });
+            }
+        }
+        function checkCollision() {
+            obstacles.forEach((obstacle) => {
+                if (player.x + player.width > obstacle.x &&
+                    player.x < obstacle.x + obstacle.width &&
+                    player.y + player.height > obstacle.y &&
+                    player.y < obstacle.y + obstacle.height) {
+                    gameOver = true;
+                }
+            });
+        }
+        function drawScore() {
+            ctx.font = '24px Arial';
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'top';
+            ctx.fillText('Score: ' + score, 10, 10);
+        }
+        function updateScore() {
+            score += 0.1;
+        }
+        function drawGameOver() {
+            if (gameOver) {
+                ctx.font = '48px Arial';
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+            }
+        }
+        function main() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawPlayer();
+            updatePlayer();
+            drawObstacles();
+            updateObstacles();
+            checkCollision();
+            drawScore();
+            updateScore();
+            drawGameOver();
+            if (!gameOver) {
+                requestAnimationFrame(main);
+            }
+        }
+        main();
+    </script>
+</body>
+</html>
