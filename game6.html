@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прыгающий человечек</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #87CEEB, #1E90FF);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .nav-container {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav-bar a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .game-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        canvas {
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to bottom, #65C18C, #55A630);
+        }
+        
+        .game-info {
+            text-align: center;
+            padding: 15px;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+        
+        .controls {
+            text-align: center;
+            padding: 10px;
+            color: white;
+            background: rgba(0, 0, 0, 0.3);
+            font-size: 14px;
+        }
+        
+        .mobile-controls {
+            display: none;
+            @media (max-width: 768px) {
+                display: block;
+            }
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav-container">
+        <ul class="nav-bar">
+            <li><a href="index.html">Главная</a></li>
+            <li><a href="game1.html">Игра 1</a></li>
+            <li><a href="game2.html">Игра 2</a></li>
+            <li><a href="game3.html">Игра 3</a></li>
+            <li><a href="game4.html">Игра 4</a></li>
+            <li><a href="game5.html">Игра 5</a></li>
+            <li><a href="game6.html" style="background-color: #4CAF50;">Текущая игра</a></li>
+            <li><a href="game7.html">Игра 7</a></li>
+            <li><a href="game8.html">Игра 8</a></li>
+            <li><a href="game9.html">Игра 9</a></li>
+            <li><a href="game10.html">Игра 10</a></li>
+            <li><a href="game11.html">Игра 11</a></li>
+            <li><a href="game12.html">Игра 12</a></li>
+            <li><a href="game13.html">Игра 13</a></li>
+            <li><a href="game14.html">Игра 14</a></li>
+            <li><a href="game15.html">Игра 15</a></li>
+            <li><a href="game16.html">Игра 16</a></li>
+            <li><a href="game17.html">Игра 17</a></li>
+        </ul>
+    </nav>
+
+    <div class="game-container">
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <div class="score-display">Счет: <span id="score">0</span></div>
+    </div>
+
+    <div class="game-info">
+        <p>Человечек бежит автоматически - ваша задача перепрыгивать препятствия!</p>
+    </div>
+
+    <div class="controls">
+        <p>Управление: стрелка вверх ↓ или пробел ↓ или тап по экрану</p>
+        <p class="mobile-controls">На мобильных устройствах просто тапните экран для прыжка</p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        
+        // Игровые переменные
+        let gameRunning = true;
+        let score = 0;
+        let frames = 0;
+        let obstacles = [];
+        const gravity = 0.5;
+        let playerVelocity = 0;
+        
+        // Персонаж
+        const player = {
+            x: 100,
+            y: canvas.height - 100,
+            width: 40,
+            height: 60,
+            jumping: false
+        };
+        
+        // Генерация препятствий
+        function createObstacle() {
+            const height = 30 + Math.random() * 70;
+            obstacles.push({
+                x: canvas.width,
+                y: canvas.height - height,
+                width: 20 + Math.random() * 30,
+                height: height,
+                passed: false
+            });
+        }
+        
+        // Прыжок
+        function jump() {
+            if (!player.jumping) {
+                playerVelocity = -12;
+                player.jumping = true;
+            }
+        }
+        
+        // Обновление игры
+        function update() {
+            if (!gameRunning) return;
+            
+            // Обновление положения игрока
+            playerVelocity += gravity;
+            player.y += playerVelocity;
+            
+            // Проверка падения
+            if (player.y > canvas.height - player.height) {
+                player.y = canvas.height - player.height;
+                player.jumping = false;
+            }
+            
+            // Движение препятствий
+            obstacles.forEach(obstacle => {
+                obstacle.x -= 5;
+                
+                // Проверка прохождения препятствия
+                if (!obstacle.passed && obstacle.x < player.x + player.width) {
+                    obstacle.passed = true;
+                    score++;
+                    scoreDisplay.textContent = score;
+                }
+            });
+            
+            // Удаление прошедших препятствий
+            obstacles = obstacles.filter(obstacle => obstacle.x > -obstacle.width);
+            
+            // Создание новых препятствий
+            if (frames % 100 === 0) {
+                createObstacle();
+            }
+            
+            frames++;
+        }
+        
+        // Отрисовка игры
+        function draw() {
+            // Очистка холста
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Фон
+            ctx.fillStyle = '#65C18C';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Трава
+            ctx.fillStyle = '#55A630';
+            ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+            
+            // Отрисовка игрока
+            ctx.fillStyle = '#FF6B6B';
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+            
+            // Голова
+            ctx.beginPath();
+            ctx.arc(player.x + player.width/2, player.y - 10, 15, 0, Math.PI * 2);
+            ctx.fillStyle = '#FF8E8E';
+            ctx.fill();
+            
+            // Отрисовка препятствий
+            obstacles.forEach(obstacle => {
+                ctx.fillStyle = '#4D194D';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+            
+            // Продолжение игры
+            if (gameRunning) requestAnimationFrame(draw);
+        }
+        
+        // Проверка столкновений
+        function checkCollision() {
+            for (const obstacle of obstacles) {
+                if (
+                    player.x < obstacle.x + obstacle.width &&
+                    player.x + player.width > obstacle.x &&
+                    player.y < obstacle.y + obstacle.height &&
+                    player.y + player.height > obstacle.y
+                ) {
+                    gameRunning = false;
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.fillStyle = 'white';
+                    ctx.font = '48px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('ИГРА ОКОНЧЕНА!', canvas.width/2, canvas.height/2);
+                    
+                    ctx.font = '24px Arial';
+                    ctx.fillText(`Ваш счет: ${score}`, canvas.width/2, canvas.height/2 + 60);
+                    
+                    ctx.fillStyle = 'yellow';
+                    ctx.fillText('Обновите страницу, чтобы сыграть снова', canvas.width/2, canvas.height/2 + 120);
+                }
+            }
+        }
+        
+        // Обработчики событий
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' || e.code === 'ArrowUp') jump();
+        });
+        
+        canvas.addEventListener('click', jump);
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            jump();
+        });
+        
+        // Игровой цикл
+        function gameLoop() {
+            update();
+            checkCollision();
+            if (gameRunning) {
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+        
+        // Запуск игры
+        gameLoop();
+    </script>
+</body>
+</html>
