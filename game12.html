@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Game 12 — Jump Runner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    justify-content: center;
+    background:#222;
+    width:100%;
+}
+
+nav a {
+    color:#0af;
+    text-decoration:none;
+    font-size:14px;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+h1 {
+    margin: 15px 0 5px;
+}
+
+#game {
+    background:#222;
+    border:2px solid #555;
+    touch-action: manipulation;
+}
+
+#info {
+    margin-top:10px;
+    font-size:16px;
+}
+
+button {
+    margin-top:10px;
+    padding:8px 16px;
+    font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+<a href="index.html">index</a>
+<a href="game1.html">game1</a>
+<a href="game2.html">game2</a>
+<a href="game3.html">game3</a>
+<a href="game4.html">game4</a>
+<a href="game5.html">game5</a>
+<a href="game6.html">game6</a>
+<a href="game7.html">game7</a>
+<a href="game8.html">game8</a>
+<a href="game9.html">game9</a>
+<a href="game10.html">game10</a>
+<a href="game11.html">game11</a>
+<a href="game12.html"><b>game12</b></a>
+<a href="game13.html">game13</a>
+<a href="game14.html">game14</a>
+<a href="game15.html">game15</a>
+<a href="game16.html">game16</a>
+<a href="game17.html">game17</a>
+</nav>
+
+<h1>Jump Runner</h1>
+
+<canvas id="game" width="360" height="200"></canvas>
+
+<div id="info">Очки: <span id="score">0</span></div>
+<button onclick="restart()">Перезапуск</button>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player, obstacle, score, gravity, gameOver;
+
+function init(){
+    player = {
+        x: 40,
+        y: 140,
+        w: 20,
+        h: 20,
+        vy: 0,
+        onGround: true
+    };
+
+    obstacle = {
+        x: canvas.width,
+        y: 150,
+        w: 20,
+        h: 30,
+        speed: 3
+    };
+
+    gravity = 0.7;
+    score = 0;
+    gameOver = false;
+
+    loop();
+}
+
+function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // ground
+    ctx.fillStyle="#444";
+    ctx.fillRect(0,170,canvas.width,30);
+
+    // player
+    ctx.fillStyle="#0af";
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+
+    // obstacle
+    ctx.fillStyle="#f33";
+    ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+}
+
+function update(){
+    // gravity
+    player.vy += gravity;
+    player.y += player.vy;
+
+    if(player.y + player.h >= 170){
+        player.y = 170 - player.h;
+        player.vy = 0;
+        player.onGround = true;
+    }
+
+    obstacle.x -= obstacle.speed;
+
+    if(obstacle.x + obstacle.w < 0){
+        obstacle.x = canvas.width + Math.random()*100;
+        score++;
+        document.getElementById("score").textContent = score;
+    }
+
+    // collision
+    if(
+        player.x < obstacle.x + obstacle.w &&
+        player.x + player.w > obstacle.x &&
+        player.y < obstacle.y + obstacle.h &&
+        player.y + player.h > obstacle.y
+    ){
+        gameOver = true;
+    }
+}
+
+function loop(){
+    if(gameOver){
+        ctx.fillStyle="#fff";
+        ctx.font="20px Arial";
+        ctx.fillText("Игра окончена!",110,100);
+        return;
+    }
+
+    update();
+    draw();
+    requestAnimationFrame(loop);
+}
+
+function jump(){
+    if(player.onGround){
+        player.vy = -10;
+        player.onGround = false;
+    }
+}
+
+// keyboard
+document.addEventListener("keydown", e=>{
+    if(e.code === "Space") jump();
+    if(e.code === "ArrowLeft") player.x -= 10;
+    if(e.code === "ArrowRight") player.x += 10;
+});
+
+// mobile tap
+canvas.addEventListener("touchstart", e=>{
+    e.preventDefault();
+    jump();
+});
+
+// mouse click also jumps
+canvas.addEventListener("mousedown", jump);
+
+function restart(){
+    document.getElementById("score").textContent = "0";
+    init();
+}
+
+init();
+</script>
+
+</body>
+</html>
