@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра 8: Поймай звезду</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        nav {
+            background-color: #333;
+            overflow: hidden;
+        }
+        nav a {
+            float: left;
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            background-color: #ddd;
+            color: black;
+        }
+        nav a.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #game {
+            width: 100%;
+            height: 400px;
+            background-color: #222;
+            position: relative;
+            overflow: hidden;
+            border-radius: 5px;
+        }
+        #basket {
+            width: 80px;
+            height: 20px;
+            background-color: #FFC107;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 0 0 10px 10px;
+        }
+        .star {
+            width: 20px;
+            height: 20px;
+            background-color: #FFEB3B;
+            position: absolute;
+            border-radius: 50%;
+            display: none;
+        }
+        .score {
+            text-align: center;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+        .instructions {
+            text-align: center;
+            margin: 10px 0;
+            font-style: italic;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: #333;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Игра 8: Поймай звезду</h1>
+    </header>
+    <nav>
+        <a href="index.html">Главная</a>
+        <a href="game1.html">Игра 1</a>
+        <a href="game2.html">Игра 2</a>
+        <a href="game3.html">Игра 3</a>
+        <a href="game4.html">Игра 4</a>
+        <a href="game5.html">Игра 5</a>
+        <a href="game6.html">Игра 6</a>
+        <a href="game7.html">Игра 7</a>
+        <a href="game8.html" class="active">Игра 8</a>
+        <a href="game9.html">Игра 9</a>
+        <a href="game10.html">Игра 10</a>
+        <a href="game11.html">Игра 11</a>
+        <a href="game12.html">Игра 12</a>
+        <a href="game13.html">Игра 13</a>
+        <a href="game14.html">Игра 14</a>
+        <a href="game15.html">Игра 15</a>
+        <a href="game16.html">Игра 16</a>
+        <a href="game17.html">Игра 17</a>
+    </nav>
+    <div class="game-container">
+        <div class="instructions">
+            Ловите падающие звёзды!<br>
+            На компьютере: стрелки ← → или пробел.<br>
+            На телефоне: тап по экрану.
+        </div>
+        <div class="score">Счёт: <span id="score">0</span></div>
+        <div id="game">
+            <div id="basket"></div>
+        </div>
+    </div>
+    <footer>
+        &copy; 2026 Игровой портал
+    </footer>
+    <script>
+        const game = document.getElementById('game');
+        const basket = document.getElementById('basket');
+        const scoreDisplay = document.getElementById('score');
+        let score = 0;
+        let basketLeft = 0;
+        let basketSpeed = 10;
+        let gameWidth = game.offsetWidth;
+        let gameHeight = game.offsetHeight;
+        let stars = [];
+        let starInterval;
+        let isGameOver = false;
+
+        // Создаём звёзды
+        function createStar() {
+            if (isGameOver) return;
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * (gameWidth - 20) + 'px';
+            star.style.top = '0';
+            game.appendChild(star);
+            stars.push(star);
+            animateStar(star);
+        }
+
+        // Анимация падения звезды
+        function animateStar(star) {
+            let pos = 0;
+            const id = setInterval(frame, 10);
+            function frame() {
+                if (isGameOver) {
+                    clearInterval(id);
+                    return;
+                }
+                if (pos >= gameHeight - 40) {
+                    clearInterval(id);
+                    star.remove();
+                    stars = stars.filter(s => s !== star);
+                } else {
+                    pos += 2;
+                    star.style.top = pos + 'px';
+                    // Проверка попадания в корзину
+                    if (pos >= gameHeight - 60 &&
+                        parseInt(star.style.left) >= basketLeft &&
+                        parseInt(star.style.left) <= basketLeft + 80) {
+                        clearInterval(id);
+                        star.remove();
+                        stars = stars.filter(s => s !== star);
+                        score++;
+                        scoreDisplay.textContent = score;
+                    }
+                }
+            }
+        }
+
+        // Движение корзины
+        function moveBasket(e) {
+            if (isGameOver) return;
+            if (e.key === 'ArrowLeft' && basketLeft > 0) {
+                basketLeft -= basketSpeed;
+            } else if (e.key === 'ArrowRight' && basketLeft < gameWidth - 80) {
+                basketLeft += basketSpeed;
+            } else if (e.key === ' ' && basketLeft < gameWidth - 80) {
+                basketLeft += basketSpeed;
+            }
+            basket.style.left = basketLeft + 'px';
+        }
+
+        // Тап на телефоне
+        function handleTap(e) {
+            if (isGameOver) return;
+            const tapX = e.clientX - game.getBoundingClientRect().left;
+            basketLeft = tapX - 40;
+            if (basketLeft < 0) basketLeft = 0;
+            if (basketLeft > gameWidth - 80) basketLeft = gameWidth - 80;
+            basket.style.left = basketLeft + 'px';
+        }
+
+        // Старт игры
+        function startGame() {
+            score = 0;
+            scoreDisplay.textContent = score;
+            basketLeft = gameWidth / 2 - 40;
+            basket.style.left = basketLeft + 'px';
+            stars.forEach(star => star.remove());
+            stars = [];
+            isGameOver = false;
+            starInterval = setInterval(createStar, 1000);
+        }
+
+        // Конец игры
+        function endGame() {
+            isGameOver = true;
+            clearInterval(starInterval);
+            alert(`Игра окончена! Ваш счёт: ${score}`);
+        }
+
+        // Обработчики событий
+        document.addEventListener('keydown', moveBasket);
+        game.addEventListener('click', handleTap);
+
+        // Старт при загрузке
+        window.addEventListener('load', () => {
+            gameWidth = game.offsetWidth;
+            gameHeight = game.offsetHeight;
+            startGame();
+        });
+
+        // Ресайз окна
+        window.addEventListener('resize', () => {
+            gameWidth = game.offsetWidth;
+            gameHeight = game.offsetHeight;
+        });
+    </script>
+</body>
+</html>
