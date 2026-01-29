@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Game 15 — Падающие звёзды</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #0a001f;
+      color: #ffd700;
+      font-family: Arial, Helvetica, sans-serif;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+    }
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 16px;
+      background: rgba(0,0,20,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.1rem;
+    }
+    nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: #88f;
+      text-decoration: none;
+      font-size: 0.9rem;
+      opacity: 0.7;
+    }
+    nav a:hover, nav a.active {
+      opacity: 1;
+      color: #aaffff;
+    }
+    canvas {
+      display: block;
+    }
+    #ui {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 80px 20px 100px;
+      color: #ffeb3b;
+      text-shadow: 0 0 10px #000, 0 0 20px #000;
+    }
+    #score {
+      font-size: 3.2rem;
+      text-align: center;
+    }
+    #game-over {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #ff4444;
+      font-size: 3rem;
+      text-align: center;
+      pointer-events: all;
+    }
+    button {
+      margin-top: 30px;
+      padding: 14px 40px;
+      font-size: 1.5rem;
+      background: #222;
+      color: #ffeb3b;
+      border: 3px solid #ffeb3b;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>Game 15 — Падающие звёзды</div>
+  <nav>
+    <a href="index.html">Главная</a>
+    <a href="game1.html">1</a><a href="game2.html">2</a><a href="game3.html">3</a>
+    <a href="game4.html">4</a><a href="game5.html">5</a><a href="game6.html">6</a>
+    <a href="game7.html">7</a><a href="game8.html">8</a><a href="game9.html">9</a>
+    <a href="game10.html">10</a><a href="game11.html">11</a><a href="game12.html">12</a>
+    <a href="game13.html">13</a><a href="game14.html">14</a>
+    <a href="game15.html" class="active">15</a>
+    <a href="game16.html">16</a><a href="game17.html">17</a>
+  </nav>
+</header>
+
+<div id="ui">
+  <div id="score">0</div>
+</div>
+
+<canvas id="c"></canvas>
+
+<div id="game-over">
+  <div>ИГРА ОКОНЧЕНА</div>
+  <div style="font-size:1.6rem; margin:20px 0; color:#ffeb3b;">
+    Счёт: <span id="final-score">0</span>
+  </div>
+  <button onclick="location.reload()">Ещё раз</button>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score');
+const gameOverEl = document.getElementById('game-over');
+const finalScoreEl = document.getElementById('final-score');
+
+let W, H;
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+let score = 0;
+let gameRunning = true;
+
+const player = {
+  x: W/2,
+  y: H - 80,
+  w: 60,
+  h: 60,
+  speed: 9
+};
+
+let keys = {};
+let touchX = null;
+
+window.addEventListener('keydown', e => keys[e.key] = true);
+window.addEventListener('keyup',   e => keys[e.key] = false);
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  touchX = e.touches[0].clientX;
+});
+canvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  touchX = e.touches[0].clientX;
+});
+canvas.addEventListener('touchend', e => {
+  touchX = null;
+});
+
+class Star {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    this.x = Math.random() * W;
+    this.y = -30;
+    this.r = 12 + Math.random() * 18;
+    this.vy = 2.5 + Math.random() * 3.5 + score * 0.008;
+    this.isBomb = Math.random() < 0.18 + score * 0.0015;
+  }
+  update() {
+    this.y += this.vy;
+    if (this.y > H + 40) this.reset();
+  }
+  draw() {
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    if (this.isBomb) {
+      ctx.fillStyle = '#ff4444';
+      ctx.beginPath();
+      ctx.arc(0,0,this.r,0,Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffeb3b';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = '#ffeb3b';
+      ctx.shadowColor = '#ffeb3b';
+      ctx.shadowBlur = 20;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        ctx.lineTo(
+          Math.cos(i * Math.PI * 0.4) * this.r,
+          Math.sin(i * Math.PI * 0.4) * this.r * (i%2 ? 0.5 : 1)
+        );
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+const objects = Array.from({length: 18}, () => new Star());
+
+function checkCollision(a, b) {
+  const dx = a.x - b.x;
+  const dy = a.y - b.y;
+  return Math.sqrt(dx*dx + dy*dy) < (a.r || 40) + (b.w/2 || 30);
+}
+
+function loop() {
+  if (!gameRunning) return;
+
+  ctx.fillStyle = 'rgba(10, 0, 31, 0.12)';
+  ctx.fillRect(0,0,W,H);
+
+  // управление
+  let targetX = player.x;
+  if (keys['ArrowLeft'] || keys['a'] || keys['A']) targetX -= player.speed;
+  if (keys['ArrowRight']|| keys['d'] || keys['D']) targetX += player.speed;
+  if (touchX !== null) {
+    if (touchX < W/2 - 30) targetX -= player.speed * 1.3;
+    if (touchX > W/2 + 30) targetX += player.speed * 1.3;
+  }
+
+  player.x = Math.max(30, Math.min(W-30, targetX));
+
+  // рисуем игрока (простой корабль/тарелка)
+  ctx.fillStyle = '#88f';
+  ctx.beginPath();
+  ctx.moveTo(player.x, player.y - player.h/2);
+  ctx.lineTo(player.x - player.w/2, player.y + player.h/2);
+  ctx.lineTo(player.x + player.w/2, player.y + player.h/2);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = '#4af';
+  ctx.fillRect(player.x-8, player.y-30, 16, 40);
+
+  // объекты
+  for (let obj of objects) {
+    obj.update();
+    obj.draw();
+
+    if (checkCollision(player, obj)) {
+      if (obj.isBomb) {
+        gameRunning = false;
+        finalScoreEl.textContent = score;
+        gameOverEl.style.display = 'flex';
+      } else {
+        score++;
+        scoreEl.textContent = score;
+        obj.reset();
+      }
+    }
+  }
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+</body>
+</html>
