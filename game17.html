@@ -1,231 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
-    ="viewport" content="width=device-width, initial-scale=1.0"&gt;
-    <title>Tap &amp; Jump - Game 17&lt;/title</title>&gt;
-    <link rel="icon" href="favicon.svg" type="image/svg+xml">
-    <style>
-        body {
-            font</style>-family: sans-serif;
-            margin: 0;
-            overflow: hidden; /* Hide scrollbars */
-            background-color: #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-
-        #game-container {
-            position: relative;
-            width: 80%;
-            max-width: 600px;
-            height: 400px;
-            background-color: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-        }
-
-        #player {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 30px;
-            height: 30px;
-            background-color: #3498db;
-            border-radius: 50%;
-        }
-
-        .obstacle {
-            position: absolute;
-            bottom: 0;
-            width: 20px;
-            height: 40px;
-            background-color: #e74c3c;
-            border-radius: 5px;
-        }
-
-        #score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            font-size: 1.2em;
-            color: #333;
-        }
-
-        #game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2em;
-            color: #333;
-            text-align: center;
-            display: none;
-        }
-
-        #game-over button {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        #navigation {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        #navigation a {
-            text-decoration: none;
-            color: #333;
-            padding: 5px 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        #navigation a:hover {
-            background-color: #eee;
-        }
-    
-
-
-    <div id="game-container">
-        <div id="player"></div>
-        <div id="score">Score:</div></div> 0
-        <div id="game-over">
-            <p>Game Over!</p>
-            <button id="restart-button">Restart</button>
-        </div>
-    
-
-    <div id="navigation">
-        <a href="index.html">Index</a>
-        &lt;</div>a href="game1.html"&gt;Game 1
-        <a href="game2.html">Game 2</a>
-        <a href="game3.html">Game 3</a>
-        <a href="game4.html">Game 4</a>
-        5.html"&gt;Game 5
-        <a href="game6.html">Game 6</a>
-        <a href="game7.html">Game 7</a>
-        <a href="game8.html">Game 8</a>
-        <a href="game9.html"></a>Game 9
-        <a href="game10.html">Game 10</a>
-        <a href="game11.html">Game 11</a>
-        <a href="game12.html">Game 12</a>
-        .html"&gt;Game 13
-        <a href="game14.html">Game 14</a>
-        <a href="game15.html">Game 15</a>
-        <a href="game16.html">Game 16</a>
-    
-
-    &lt;script&gt;
-        const player = document.getElementById('player');
-        const gameContainer = document.getElementById('game-container');
-        const scoreDisplay = document.getElementById('score');
-        const gameOverScreen = document.getElementById('game-over');
-        const restartButton = document.getElementById('restart-button');
-
-        let playerBottom = 20;
-        let gravity = 0.5;
-        let isJumping = false;
-        let score = 0;
-        let obstacleInterval;
-        let obstacles = [];
-
-        function startGame() {
-            playerBottom = 20;
-            score = 0;
-            scoreDisplay.textContent = 'Score: 0';
-            gameOverScreen.style.display = 'none';
-            obstacles = [];
-            isJumping = false;
-
-            // Start Obstacle Generation
-            obstacleInterval = setInterval(generateObstacle, 2000); // Generate every 2 seconds
-            animate();
-        }
-
-        function generateObstacle() {
-            const obstacle = document.createElement('div');
-            obstacle.classList.add('obstacle');
-            obstacle.style.left = gameContainer.offsetWidth + 'px'; // Start off-screen
-            obstacle.style.bottom = 0;
-            gameContainer.appendChild(obstacle);
-            obstacles.push(obstacle);
-
-            // Move the obstacle
-            let obstacleSpeed = 5 + (score / 100);  // Increase speed with score
-            let obstaclePosition = gameContainer.offsetWidth;
-
-            const moveObstacleInterval = setInterval(() =&gt; {
-                obstaclePosition -= obstacleSpeed;
-                obstacle.style.left = obstaclePosition + 'px';
-
-                // Collision Detection
-                if (obstaclePosition &lt; player.offsetLeft + player.offsetWidth &amp;&amp;
-                    obstaclePosition + obstacle.offsetWidth &gt; player.offsetLeft &amp;&amp;
-                    playerBottom &lt; obstacle.offsetHeight) {
-                    gameOver();
-                    clearInterval(moveObstacleInterval); // Stop moving this specific obstacle
-                }
-
-                if (obstaclePosition + obstacle.offsetWidth &lt; 0) {
-                    clearInterval(moveObstacleInterval);
-                    obstacle.remove();
-                    obstacles = obstacles.filter(obs =&gt; obs !== obstacle); // Remove from array
-                }
-            }, 20);
-        }
-
-        function jump() {
-            if (!isJumping) {
-                isJumping = true;
-                let jumpHeight = 15;
-                let jumpInterval = setInterval(() =&gt; {
-                    playerBottom += jumpHeight;
-                    player.style.bottom = playerBottom + 'px';
-                    jumpHeight -= gravity;
-
-                    if (playerBottom &lt;= 20) {
-                        clearInterval(jumpInterval);
-                        playerBottom = 20;
-                        isJumping = false;
-                    }
-                }, 20);
-            }
-        }
-
-        function animate() {
-            score++;
-            scoreDisplay.textContent = 'Score: ' + score;
-            requestAnimationFrame(animate);
-        }
-
-        function gameOver() {
-            clearInterval(obstacleInterval);
-            obstacles.forEach(obstacle =&gt; obstacle.remove());
-            obstacles = [];
-            gameOverScreen.style.display = 'block';
-        }
-
-        // Event Listeners for controls
-        document.addEventListener('keydown', (e) =&gt; {
-            if (e.code === 'Space' || e.code === 'ArrowUp') {
-                jump();
-            }
-        });
-
-        document.addEventListener('touchstart', (e) =&gt; {
-            e.preventDefault(); // Prevent scrolling on touch devices
-            jump();
-        });
-
-        restartButton.addEventListener('click', startGame);
-
-        startGame();  // Start the game initially
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Ball Game</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="game1.html">Game 1</a></li>
+            <!-- ... другие игры ... -->
+            <li><a href="game16.html">Game 16</a></li>
+            <li><a href="game17.html" class="active">Game 17</a></li>
+        </ul>
+    </nav>
+    <div id="gameContainer">
+        <div id="ball"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
