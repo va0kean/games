@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game 16 - Лови Звёзды</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #0f0f23, #1a1a3a, #2a1a4a);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            touch-action: none;
+        }
+
+        .header {
+            text-align: center;
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .title {
+            font-size: 24px;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px #fff;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 8px 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .nav a:hover {
+            background: rgba(255,255,255,0.2);
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .game-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(255,255,255,0.2);
+            background: radial-gradient(circle at center, #000428 0%, #004e92 100%);
+            max-width: 100%;
+            max-height: 100%;
+            touch-action: none;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .score {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        @media (max-width: 600px) {
+            .title { font-size: 20px; }
+            .nav a { font-size: 10px; padding: 6px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="title">⭐ Лови Звёзды ⭐</div>
+        <div class="nav">
+            <a href="index.html">🏠</a>
+            <a href="game1.html">1</a><a href="game2.html">2</a><a href="game3.html">3</a><a href="game4.html">4</a>
+            <a href="game5.html">5</a><a href="game6.html">6</a><a href="game7.html">7</a><a href="game8.html">8</a>
+            <a href="game9.html">9</a><a href="game10.html">10</a><a href="game11.html">11</a><a href="game12.html">12</a>
+            <a href="game13.html">13</a><a href="game14.html">14</a><a href="game15.html">15</a>
+            <a href="game16.html">16</a><a href="game17.html">17</a>
+        </div>
+    </div>
+
+    <div class="score" id="score">Счёт: 0</div>
+    
+    <div class="game-container">
+        <canvas id="gameCanvas"></canvas>
+    </div>
+
+    <div class="controls">
+        💻 Стрелки / Пробел | 📱 Касание экрана
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+
+        // Адаптивный размер canvas
+        function resizeCanvas() {
+            const maxSize = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.7);
+            canvas.width = maxSize;
+            canvas.height = maxSize;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Игровые переменные
+        let player = { x: canvas.width / 2, y: canvas.height - 80, size: 25, speed: 8 };
+        let stars = [];
+        let particles = [];
+        let score = 0;
+        let gameSpeed = 2;
+        let keys = {};
+        let lastTap = 0;
+
+        // Создание звезды
+        function createStar() {
+            return {
+                x: Math.random() * canvas.width,
+                y: -30,
+                size: 12 + Math.random() * 8,
+                speed: 1.5 + Math.random() * 2,
+                glow: Math.random() * 0.5 + 0.5
+            };
+        }
+
+        // Создание частиц
+        function createParticles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    life: 1,
+                    size: Math.random() * 4 + 2
+                });
+            }
+        }
+
+        // Обновление игрока
+        function updatePlayer() {
+            if (keys['ArrowLeft'] || keys['a']) player.x = Math.max(0, player.x - player.speed);
+            if (keys['ArrowRight'] || keys['d']) player.x = Math.min(canvas.width, player.x + player.speed);
+            if (keys['ArrowUp'] || keys['w']) player.y = Math.max(0, player.y - player.speed);
+            if (keys['ArrowDown'] || keys['s']) player.y = Math.min(canvas.height - player.size, player.y + player.speed);
+            
+            // Ограничения
+            player.x = Math.max(player.size / 2, Math.min(canvas.width - player.size / 2, player.x));
+            player.y = Math.max(player.size / 2, Math.min(canvas.height - player.size / 2, player.y));
+        }
+
+        // Обновление звёзд
+        function updateStars() {
+            // Добавляем новые звёзды
+            if (Math.random() < 0.02 + gameSpeed * 0.005) {
+                stars.push(createStar());
+            }
+
+            for (let i = stars.length - 1; i >= 0; i--) {
+                let star = stars[i];
+                star.y += star.speed + gameSpeed;
+                
+                // Удаляем звёзды за экраном
+                if (star.y > canvas.height + 50) {
+                    stars.splice(i, 1);
+                    continue;
+                }
+
+                // Столкновение
+                const dx = star.x - player.x;
+                const dy = star.y - player.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < star.size + player.size / 2) {
+                    score += 10;
+                    createParticles(star.x, star.y);
+                    stars.splice(i, 1);
+                }
+            }
+        }
+
+        // Обновление частиц
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.03;
+                p.vx *= 0.98;
+                p.vy *= 0.98;
+                
+                if (p.life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        // Отрисовка
+        function draw() {
+            // Очистка с градиентом
+            const gradient = ctx.createRadialGradient(
+                canvas.width/2, canvas.height/2, 0,
+                canvas.width/2, canvas.height/2, canvas.width
+            );
+            gradient.addColorStop(0, 'rgba(0,20,60,0.1)');
+            gradient.addColorStop(1, 'rgba(0,0,0,1)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Звёзды фона
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            for (let i = 0; i < 50; i++) {
+                const x = (Date.now() * 0.01 + i * 100) % canvas.width;
+                const y = (i * 37) % canvas.height;
+                ctx.beginPath();
+                ctx.arc(x, y, 1 + Math.sin(Date.now() * 0.005 + i) * 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Частицы
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.life;
+                const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+                gradient.addColorStop(0, 'rgba(255,255,150,0.8)');
+                gradient.addColorStop(1, 'rgba(255,150,50,0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Игрок (корабль)
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.fillStyle = '#00ff88';
+            ctx.shadowColor = '#00ff88';
+            ctx.shadowBlur = 20;
+            
+            // Корпус корабля
+            ctx.beginPath();
+            ctx.moveTo(0, -player.size);
+            ctx.lineTo(-player.size * 0.6, player.size * 0.6);
+            ctx.lineTo(-player.size * 0.3, player.size * 0.8);
+            ctx.lineTo(player.size * 0.3, player.size * 0.8);
+            ctx.lineTo(player.size * 0.6, player.size * 0.6);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Двигатели
+            ctx.fillStyle = '#ffaa00';
+            ctx.shadowColor = '#ffaa00';
+            ctx.beginPath();
+            ctx.moveTo(-8, player.size * 0.4);
+            ctx.lineTo(0, player.size * 0.8);
+            ctx.lineTo(8, player.size * 0.4);
+            ctx.fill();
+            ctx.restore();
+
+            // Звёзды
+            stars.forEach(star => {
+                ctx.save();
+                ctx.translate(star.x, star.y);
+                const pulse = Math.sin(Date.now() * 0.01 + star.x * 0.01) * 0.3 + 1;
+                
+                // Свечение
+                const glowGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, star.size * 2);
+                glowGradient.addColorStop(0, `rgba(255,255,${Math.floor(150 + star.glow * 100)},${0.6 * pulse})`);
+                glowGradient.addColorStop(0.6, `rgba(255,255,${Math.floor(150 + star.glow * 100)},0.2)`);
+                glowGradient.addColorStop(1, 'rgba(255,255,255,0)');
+                ctx.shadowColor = `hsl(60, 100%, ${70 + star.glow * 30}%)`;
+                ctx.shadowBlur = 20 * pulse;
+                ctx.fillStyle = glowGradient;
+                ctx.beginPath();
+                ctx.arc(0, 0, star.size * pulse * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Основная звезда
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffff88';
+                ctx.beginPath();
+                ctx.arc(0, 0, star.size * pulse, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            scoreEl.textContent = `Счёт: ${score}`;
+        }
+
+        // Игровой цикл
+        function gameLoop() {
+            updatePlayer();
+            updateStars();
+            updateParticles();
+            draw();
+            gameSpeed = Math.min(8, 2 + score / 5000);
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Управление клавиатурой
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            keys[e.key.toLowerCase()] = true;
+        });
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        // Управление касанием
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const now = Date.now();
+            if (now - lastTap < 300) {
+                // Двойное касание - прыжок вверх
+                player.y -= 60;
+            } else {
+                // Обычное касание - движение к точке касания
+                const rect = canvas.getBoundingClientRect();
+                const x = e.touches[0].clientX - rect.left;
+                const y = e.touches[0].clientY - rect.top;
+                player.x += (x - player.x) * 0.3;
+                player.y += (y - player.y) * 0.3;
+            }
+            lastTap = now;
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            player.x += (x - player.x) * 0.3;
+            player.y += (y - player.y) * 0.3;
+        });
+
+        // Запуск игры
+        gameLoop();
+    </script>
+</body>
+</html>
