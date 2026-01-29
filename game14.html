@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра №14</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            text-align: center;
+            padding: 20px;
+        }
+        header {
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .navigation {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .navigation a {
+            color: #3498db;
+            text-decoration: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            background-color: #34495e;
+            transition: background-color 0.3s;
+        }
+        .navigation a:hover {
+            background-color: #2980b9;
+        }
+        #game-container {
+            width: 300px;
+            height: 300px;
+            border: 3px solid #3498db;
+            position: relative;
+            overflow: hidden;
+            background-color: #1a252f;
+            margin: 20px auto;
+        }
+        #player {
+            width: 30px;
+            height: 30px;
+            background-color: #e74c3c;
+            position: absolute;
+            top: 135px;
+            left: 135px;
+            border-radius: 50%;
+        }
+        #target {
+            width: 20px;
+            height: 20px;
+            background-color: #2ecc71;
+            position: absolute;
+            border-radius: 50%;
+        }
+        .controls {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #bdc3c7;
+        }
+        footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #95a5a6;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Игра №14</h1>
+        <p>Собери все зелёные цели!</p>
+    </header>
+
+    <div class="navigation">
+        <a href="index.html">Главная</a>
+        <a href="game1.html">Игра 1</a>
+        <a href="game2.html">Игра 2</a>
+        <a href="game3.html">Игра 3</a>
+        <a href="game4.html">Игра 4</a>
+        <a href="game5.html">Игра 5</a>
+        <a href="game6.html">Игра 6</a>
+        <a href="game7.html">Игра 7</a>
+        <a href="game8.html">Игра 8</a>
+        <a href="game9.html">Игра 9</a>
+        <a href="game10.html">Игра 10</a>
+        <a href="game11.html">Игра 11</a>
+        <a href="game12.html">Игра 12</a>
+        <a href="game13.html">Игра 13</a>
+        <a href="game14.html" class="active">Игра 14</a>
+        <a href="game15.html">Игра 15</a>
+        <a href="game16.html">Игра 16</a>
+        <a href="game17.html">Игра 17</a>
+    </div>
+
+    <div id="game-container">
+        <div id="player"></div>
+        <div id="target"></div>
+    </div>
+
+    <div class="controls">
+        <p>Компьютер: стрелки — движение, пробел — захват цели</p>
+        <p>Телефон: касание экрана — перемещение, двойное касание — захват цели</p>
+    </div>
+
+    <footer>
+        &copy; 2026 Игра №14. Все права защищены.
+    </footer>
+
+    <script>
+        const player = document.getElementById('player');
+        const target = document.getElementById('target');
+        const gameContainer = document.getElementById('game-container');
+
+        let playerX = 135;
+        let playerY = 135;
+        let targetX = Math.floor(Math.random() * 280);
+        let targetY = Math.floor(Math.random() * 280);
+        let score = 0;
+
+        // Позиция игрока
+        function updatePlayerPosition() {
+            player.style.left = playerX + 'px';
+            player.style.top = playerY + 'px';
+        }
+
+        // Позиция цели
+        function updateTargetPosition() {
+            target.style.left = targetX + 'px';
+            target.style.top = targetY + 'px';
+        }
+
+        // Проверка столкновения
+        function checkCollision() {
+            const playerRect = player.getBoundingClientRect();
+            const targetRect = target.getBoundingClientRect();
+
+            if (
+                playerRect.left < targetRect.right &&
+                playerRect.right > targetRect.left &&
+                playerRect.top < targetRect.bottom &&
+                playerRect.bottom > targetRect.top
+            ) {
+                score++;
+                targetX = Math.floor(Math.random() * 280);
+                targetY = Math.floor(Math.random() * 280);
+                updateTargetPosition();
+                alert(`Цель захвачена! Ваш счёт: ${score}`);
+            }
+        }
+
+        // Управление стрелками и пробелом (ПК)
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowLeft':
+                    playerX = Math.max(0, playerX - 10);
+                    break;
+                case 'ArrowRight':
+                    playerX = Math.min(270, playerX + 10);
+                    break;
+                case 'ArrowUp':
+                    playerY = Math.max(0, playerY - 10);
+                    break;
+                case 'ArrowDown':
+                    playerY = Math.min(270, playerY + 10);
+                    break;
+                case ' ':
+                    checkCollision();
+                    break;
+            }
+            updatePlayerPosition();
+        });
+
+        // Управление касанием (мобильные устройства)
+        let lastTapTime = 0;
+        gameContainer.addEventListener('touchstart', (e) => {
+            const currentTime = new Date().getTime();
+            const tapDelay = currentTime - lastTapTime;
+            lastTapTime = currentTime;
+
+            if (tapDelay < 300) {
+                // Двойное касание — захват цели
+                checkCollision();
+            } else {
+                // Одиночное касание — перемещение
+                const touch = e.touches[0];
+                const rect = gameContainer.getBoundingClientRect();
+                playerX = touch.clientX - rect.left - 15; // центр игрока
+                playerY = touch.clientY - rect.top - 15;
+                playerX = Math.max(0, Math.min(270, playerX));
+                playerY = Math.max(0, Math.min(270, playerY));
+                updatePlayerPosition();
+            }
+        });
+
+        // Инициализация игры
+        updatePlayerPosition();
+        updateTargetPosition();
+    </script>
+</body>
