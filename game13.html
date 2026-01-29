@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Space Leap - Game 13</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --accent-color: #00d4ff;
+            --text-color: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--bg-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        /* Навигация */
+        nav {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        nav a {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent-color);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        nav a.active {
+            color: var(--accent-color);
+            font-weight: bold;
+            border: 1px solid var(--accent-color);
+        }
+
+        /* Контейнер игры */
+        #game-container {
+            position: relative;
+            margin-top: 20px;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, #0b0e14, #1a1f2c);
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+
+        #score {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .btn-start {
+            pointer-events: all;
+            background: var(--accent-color);
+            color: black;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<nav id="main-nav"></nav>
+
+<div id="game-container">
+    <div id="score">0</div>
+    <canvas id="gameCanvas"></canvas>
+    <div id="menu" class="ui-layer">
+        <button class="btn-start" onclick="startGame()">Начать игру</button>
+        <p style="margin-top: 15px;">Пробел или Тап для прыжка</p>
+    </div>
+</div>
+
+<script>
+    // --- Генерация навигации ---
+    const nav = document.getElementById('main-nav');
+    const pages = ['index.html'];
+    for(let i=1; i<=17; i++) pages.push(`game${i}.html`);
+
+    pages.forEach(page => {
+        const a = document.createElement('a');
+        a.href = page;
+        a.textContent = page.replace('.html', '').toUpperCase();
+        if(page === 'game13.html') a.className = 'active';
+        nav.appendChild(a);
+    });
+
+    // --- Логика игры ---
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+    const menu = document.getElementById('menu');
+
+    // Адаптивность размера
+    canvas.width = Math.min(window.innerWidth - 40, 400);
+    canvas.height = Math.min(window.innerHeight - 150, 600);
+
+    let bird = { x: 50, y: canvas.height / 2, w: 30, h: 20, velocity: 0, gravity: 0.5, jump: -8 };
+    let pipes = [];
+    let score = 0;
+    let gameActive = false;
+    let frame = 0;
+
+    function createPipe() {
+        const gap = 150;
+        const minPipeHeight = 50;
+        const height = Math.random() * (canvas.height - gap - minPipeHeight * 2) + minPipeHeight;
+        pipes.push({ x: canvas.width, y: 0, w: 50, h: height, type: 'top' });
+        pipes.push({ x: canvas.width, y: height + gap, w: 50, h: canvas.height - height - gap, type: 'bottom' });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Корабль (игрок)
+        ctx.fillStyle = '#00d4ff';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00d4ff';
+        ctx.fillRect(bird.x, bird.y, bird.w, bird.h);
+        ctx.shadowBlur = 0;
+
+        // Препятствия
+        ctx.fillStyle = '#ff3e3e';
+        pipes.forEach(pipe => {
+            ctx.fillRect(pipe.x, pipe.y, pipe.w, pipe.h);
+        });
+    }
+
+    function update() {
+        if (!gameActive) return;
+
+        bird.velocity += bird.gravity;
+        bird.y += bird.velocity;
+
+        // Стенки
+        if (bird.y + bird.h > canvas.height || bird.y < 0) endGame();
+
+        if (frame % 90 === 0) createPipe();
+
+        pipes.forEach((pipe, index) => {
+            pipe.x -= 3;
+
+            // Коллизии
+            if (bird.x < pipe.x + pipe.w &&
+                bird.x + bird.w > pipe.x &&
+                bird.y < pipe.y + pipe.h &&
+                bird.y + bird.h > pipe.y) {
+                endGame();
+            }
+
+            // Очки
+            if (pipe.type === 'top' && pipe.x + pipe.w === bird.x) {
+                score++;
+                scoreElement.textContent = score;
+            }
+
+            // Удаление старых труб
+            if (pipe.x + pipe.w < 0) pipes.splice(index, 1);
+        });
+
+        frame++;
+    }
+
+    function loop() {
+        update();
+        draw();
+        if (gameActive) requestAnimationFrame(loop);
+    }
+
+    function jump() {
+        if (gameActive) {
+            bird.velocity = bird.jump;
+        }
+    }
+
+    function startGame() {
+        bird.y = canvas.height / 2;
+        bird.velocity = 0;
+        pipes = [];
+        score = 0;
+        frame = 0;
+        scoreElement.textContent = '0';
+        gameActive = true;
+        menu.style.display = 'none';
+        loop();
+    }
+
+    function endGame() {
+        gameActive = false;
+        menu.style.display = 'block';
+        menu.innerHTML = `<h2 style="color:#ff3e3e">GAME OVER</h2>
+                          <p>Счёт: ${score}</p>
+                          <button class="btn-start" onclick="startGame()">Еще раз</button>`;
+    }
+
+    // Управление
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' || e.code === 'ArrowUp') jump();
+    });
+
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (!gameActive && menu.style.display !== 'none') {
+            // Если игра не активна, кнопка старта сработает сама по onclick
+        } else {
+            jump();
+        }
+    }, { passive: false });
+
+    // Инициализация отрисовки
+    draw();
+</script>
+
+</body>
+</html>
