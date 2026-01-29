@@ -47,3 +47,5 @@ document.addEventListener('keyup', (event) => {
 document.getElementById('ball').addEventListener('click', jumpBall);
 
 ballInterval = setInterval(moveBall, 20);
+
+document.getElementById('ball').addEventListener('touchstart', jumpBall);
