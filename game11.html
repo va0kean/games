@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game 11 - Simple Game</title>
+    <link rel="shortcut icon" href="favicon.svg" type="image/svg+xml"/>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f0f0;
+            margin-top: 50px;
+        }
+        
+        canvas {
+            border: 1px solid black;
+            display: block;
+            margin: auto;
+        }
+        
+        .navigation {
+            margin-top: 20px;
+        }
+        
+        a {
+            color: blue;
+            text-decoration: none;
+            padding: 5px;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    
+<h1>Simple Jumping Game</h1>
+<p>Use the spacebar or tap to jump!</p>
+
+<div class="game-container">
+    <canvas id="gameCanvas" width="400" height="300"></canvas>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let playerX = 50;
+    let playerY = 200;
+    let gravity = 1;
+    let velocity = 0;
+    let isJumping = false;
+
+    // Mobile touch event handler
+    canvas.addEventListener('touchstart', () => handleJump());
+
+    // Keyboard event listener for space bar
+    window.addEventListener('keydown', (event) => {
+        if(event.key === ' ') {
+            handleJump();
+        }
+    });
+
+    function drawPlayer() {
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(playerX, playerY, 10, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function updatePosition() {
+        if(isJumping){
+            velocity += gravity;
+            playerY += velocity;
+            
+            if(playerY > 200){
+                playerY = 200;
+                isJumping = false;
+                velocity = 0;
+            }
+        }
+    }
+
+    function handleJump(){
+        if(!isJumping){
+            isJumping = true;
+            velocity = -20;
+        }
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);   
+        drawPlayer();     
+        updatePosition();
+    }
+
+    animate();
+});
+</script>
+
+<div class="navigation">
+    <a href="index.html">Home</a> |
+    <a href="game1.html">Game 1</a> |
+    <a href="game2.html">Game 2</a> |
+    <a href="game3.html">Game 3</a> |
+    <a href="game4.html">Game 4</a> |
+    <a href="game5.html">Game 5</a> |
+    <a href="game6.html">Game 6</a> |
+    <a href="game7.html">Game 7</a> |
+    <a href="game8.html">Game 8</a> |
+    <a href="game9.html">Game 9</a> |
+    <a href="game10.html">Game 10</a> |
+    <b>Game 11</b> |
+    <a href="game12.html">Game 12</a> |
+    <a href="game13.html">Game 13</a> |
+    <a href="game14.html">Game 14</a> |
+    <a href="game15.html">Game 15</a> |
+    <a href="game16.html">Game 16</a> |
+    <a href="game17.html">Game 17</a>
+</div>
+
+</body>
+</html>
