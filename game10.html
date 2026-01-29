@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поймай падающие объекты</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <style>
+        body {
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #game-container {
+            position: relative;
+            width: 80%;
+            max-width: 400px;
+            height: 600px;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            overflow: hidden;
+            background-color: #fff;
+        }
+        #player {
+            position: absolute;
+            bottom: 10px;
+            width: 50px;
+            height: 50px;
+            background-color: #007bff;
+            border-radius: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .object {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #dc3545;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Поймай падающие объекты</h1>
+    <div id="game-container">
+        <div id="player"></div>
+    </div>
+    <p>Счёт: <span id="score">0</span></p>
+    <nav>
+        <a href="index.html">На главную</a> |
+        <a href="game1.html">Игра 1</a> |
+        <a href="game2.html">Игра 2</a> |
+        <a href="game3.html">Игра 3</a> |
+        <a href="game4.html">Игра 4</a> |
+        <a href="game5.html">Игра 5</a> |
+        <a href="game6.html">Игра 6</a> |
+        <a href="game7.html">Игра 7</a> |
+        <a href="game8.html">Игра 8</a> |
+        <a href="game9.html">Игра 9</a> |
+        <a href="game10.html">Игра 10</a> |
+        <a href="game11.html">Игра 11</a> |
+        <a href="game12.html">Игра 12</a> |
+        <a href="game13.html">Игра 13</a> |
+        <a href="game14.html">Игра 14</a> |
+        <a href="game15.html">Игра 15</a> |
+        <a href="game16.html">Игра 16</a> |
+        <a href="game17.html">Игра 17</a>
+    </nav>
+
+    <script>
+        const player = document.getElementById('player');
+        const gameContainer = document.getElementById('game-container');
+        const scoreElement = document.getElementById('score');
+        let score = 0;
+        let playerX = gameContainer.clientWidth / 2;
+        let objects = [];
+        let speed = 2;
+
+        // Управление игроком
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && playerX > 25) playerX -= 20;
+            if (e.key === 'ArrowRight' && playerX < gameContainer.clientWidth - 25) playerX += 20;
+            player.style.left = `${playerX}px`;
+        });
+
+        gameContainer.addEventListener('click', (e) => {
+            const rect = gameContainer.getBoundingClientRect();
+            playerX = e.clientX - rect.left;
+            if (playerX < 25) playerX = 25;
+            if (playerX > gameContainer.clientWidth - 25) playerX = gameContainer.clientWidth - 25;
+            player.style.left = `${playerX}px`;
+        });
+
+        // Генерация объектов
+        setInterval(() => {
+            const object = document.createElement('div');
+            object.className = 'object';
+            object.style.left = `${Math.random() * (gameContainer.clientWidth - 30)}px`;
+            object.style.top = '0px';
+            gameContainer.appendChild(object);
+            objects.push(object);
+        }, 1000);
+
+        // Движение объектов и проверка столкновений
+        setInterval(() => {
+            objects.forEach((object, index) => {
+                const top = parseInt(object.style.top) + speed;
+                object.style.top = `${top}px`;
+                if (top > gameContainer.clientHeight) {
+                    gameContainer.removeChild(object);
+                    objects.splice(index, 1);
+                }
+                if (top + 30 > gameContainer.clientHeight - 50 &&
+                    Math.abs(playerX - parseInt(object.style.left)) < 40) {
+                    score++;
+                    scoreElement.textContent = score;
+                    gameContainer.removeChild(object);
+                    objects.splice(index, 1);
+                }
+            });
+        }, 16);
+    </script>
+</body>
+</html>
