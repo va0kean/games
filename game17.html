@@ -1,25 +1,258 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Ball Game</title>
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Результаты — game17</title>
+  <meta name="description" content="Обзор 16 сервисов с оценками и краткими резюме." />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #1a1a1a;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --border: #e5e7eb;
+      --card: #f8fafc;
+      --badge: #eef2ff;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b0f14;
+        --fg: #e5e7eb;
+        --muted: #94a3b8;
+        --accent: #60a5fa;
+        --border: #1f2937;
+        --card: #0f172a;
+        --badge: #1e293b;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      line-height: 1.6;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      background: var(--card);
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+    h1 {
+      margin: 8px 0 0;
+      font-size: 24px;
+    }
+    nav {
+      margin-top: 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--fg);
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      font-size: 14px;
+    }
+    nav a:hover, nav a:focus-visible {
+      border-color: var(--accent);
+      outline: none;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+    }
+    nav a[aria-current="page"] {
+      background: var(--badge);
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    main .intro {
+      margin: 20px 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    ol.results {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    li.card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+    .title {
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .rating {
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .stars {
+      color: #f59e0b;
+      letter-spacing: 1px;
+    }
+    .summary {
+      color: var(--fg);
+      font-size: 14px;
+      margin: 0;
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .sr-only {
+      position: absolute;
+      width: 1px; height: 1px;
+      padding: 0; margin: -1px;
+      overflow: hidden; clip: rect(0,0,0,0);
+      white-space: nowrap; border: 0;
+    }
+  </style>
 </head>
 <body>
-    <nav>
+  <a class="sr-only" href="#results">Перейти к результатам</a>
+
+  <header>
+    <div class="container">
+      <h1>Результаты</h1>
+      <p class="intro">Ниже — 16 сервисов с оценкой по пятибалльной шкале и кратким резюме (10–15 слов).</p>
+      <nav aria-label="Основная навигация">
         <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="game1.html">Game 1</a></li>
-            <!-- ... другие игры ... -->
-            <li><a href="game16.html">Game 16</a></li>
-            <li><a href="game17.html" class="active">Game 17</a></li>
+          <li><a href="index.html">index</a></li>
+          <li><a href="game1.html">game1</a></li>
+          <li><a href="game2.html">game2</a></li>
+          <li><a href="game3.html">game3</a></li>
+          <li><a href="game4.html">game4</a></li>
+          <li><a href="game5.html">game5</a></li>
+          <li><a href="game6.html">game6</a></li>
+          <li><a href="game7.html">game7</a></li>
+          <li><a href="game8.html">game8</a></li>
+          <li><a href="game9.html">game9</a></li>
+          <li><a href="game10.html">game10</a></li>
+          <li><a href="game11.html">game11</a></li>
+          <li><a href="game12.html">game12</a></li>
+          <li><a href="game13.html">game13</a></li>
+          <li><a href="game14.html">game14</a></li>
+          <li><a href="game15.html">game15</a></li>
+          <li><a href="game16.html">game16</a></li>
+          <li><a href="game17.html" aria-current="page">game17</a></li>
         </ul>
-    </nav>
-    <div id="gameContainer">
-        <div id="ball"></div>
+      </nav>
     </div>
-    <script src="script.js"></script>
+  </header>
+
+  <main id="results" class="container">
+    <ol class="results" aria-label="Список сервисов с оценками">
+      <li class="card">
+        <div class="title">OpenAI ChatGPT</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">Универсальный ИИ‑помощник для кода и текста — быстро, точно, удобно.</p>
+      </li>
+      <li class="card">
+        <div class="title">GitHub Copilot</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">Автодополнение кода в IDE — ускоряет разработку, экономит время.</p>
+      </li>
+      <li class="card">
+        <div class="title">Notion</div>
+        <div class="rating" aria-label="Рейтинг: 4 из 5">4/5 <span class="stars" aria-hidden="true">★★★★☆</span></div>
+        <p class="summary">Универсальная база знаний и задач — гибкая, масштабируемая, командная.</p>
+      </li>
+      <li class="card">
+        <div class="title">Jira</div>
+        <div class="rating" aria-label="Рейтинг: 4 из 5">4/5 <span class="stars" aria-hidden="true">★★★★☆</span></div>
+        <p class="summary">Трекинг задач и спринтов — гибкий, интегрируется, но требует настройки.</p>
+      </li>
+      <li class="card">
+        <div class="title">Trello</div>
+        <div class="rating" aria-label="Рейтинг: 4 из 5">4/5 <span class="stars" aria-hidden="true">★★★★☆</span></div>
+        <p class="summary">Доски и карточки — простота, ясность, подходит для небольших команд.</p>
+      </li>
+      <li class="card">
+        <div class="title">Slack</div>
+        <div class="rating" aria-label="Рейтинг: 4 из 5">4/5 <span class="stars" aria-hidden="true">★★★★☆</span></div>
+        <p class="summary">Командный чат и интеграции — быстрый обмен, удобные каналы, уведомления.</p>
+      </li>
+      <li class="card">
+        <div class="title">Google Analytics</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">Веб‑аналитика — глубокая отчётность, сегментация, бесплатный тариф присутствует.</p>
+      </li>
+      <li class="card">
+        <div class="title">Figma</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">Дизайн и прототипирование интерфейсов — командный, удобный, браузерный.</p>
+      </li>
+      <li class="card">
+        <div class="title">Postman</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">Отладка API — окружения, автотесты, экспорт. Очень удобно.</p>
+      </li>
+      <li class="card">
+        <div class="title">Docker</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">Контейнеризация сервисов — изоляция, воспроизводимость, масштабируемость. Практичный стандарт.</p>
+      </li>
+      <li class="card">
+        <div class="title">Discord</div>
+        <div class="rating" aria-label="Рейтинг: 4 из 5">4/5 <span class="stars" aria-hidden="true">★★★★☆</span></div>
+        <p class="summary">Голосовые и текстовые каналы — стабильно, удобно, популярно среди комьюнити.</p>
+      </li>
+      <li class="card">
+        <div class="title">Stack Overflow</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">База знаний разработчиков — поиск решений, активное сообщество, проверенные ответы.</p>
+      </li>
+      <li class="card">
+        <div class="title">Zoom</div>
+        <div class="rating" aria-label="Рейтинг: 4 из 5">4/5 <span class="stars" aria-hidden="true">★★★★☆</span></div>
+        <p class="summary">Видеоконференции — надёжный, простой, подходит для больших мероприятий.</p>
+      </li>
+      <li class="card">
+        <div class="title">GitHub</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">Хостинг репозиториев и CI — стандарт командной разработки, отличная интеграция.</p>
+      </li>
+      <li class="card">
+        <div class="title">Google Sheets</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">Онлайн‑таблицы — совместная работа, формулы, простая аналитика. Очень гибко.</p>
+      </li>
+      <li class="card">
+        <div class="title">Bitwarden</div>
+        <div class="rating" aria-label="Рейтинг: 5 из 5">5/5 <span class="stars" aria-hidden="true">★★★★★</span></div>
+        <p class="summary">Менеджер паролей — открытый код, синхронизация, безопасность, удобно.</p>
+      </li>
+    </ol>
+
+    <footer class="container" role="contentinfo">
+      <p>Страница: game17.html • Фавикон: favicon.svg</p>
+    </footer>
+  </main>
 </body>
 </html>
